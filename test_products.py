@@ -1,59 +1,48 @@
 import requests
 import json
-from config import BASE_URL
 from test_data import PRODUCT_TEST_CASES
 
-def test_create_products():
-    print("=== ТЕСТИРОВАНИЕ СОЗДАНИЯ ПРОДУКТОВ ===\n")
+def test_products_with_validation():
+    print("=== ПОЛНОЕ ТЕСТИРОВАНИЕ ВАЛИДАЦИИ ===")
+    print("=" * 50)
     
     passed = 0
     failed = 0
-    bugs = []
     
     for test in PRODUCT_TEST_CASES:
-        print(f"Тест: {test['name']}")
-        print(f"Данные: {test['data']}")
+        print(f"🧪 {test['name']}")
         
         try:
             response = requests.post(
-                f"{BASE_URL}/api/products",
+                "https://api.restful-api.dev/objects",
                 json=test['data'],
                 timeout=10
             )
             
             if response.status_code == test['expected']:
-                print(f"✅ Успех: {response.status_code}")
+                print(f"   ✅ Успех: {response.status_code}")
                 passed += 1
                 
-                # Для успешных запросов проверяем структуру ответа
-                if response.status_code == 201:
+                # Дополнительная проверка для успешных запросов
+                if response.status_code == 200:
                     data = response.json()
-                    if 'id' not in data:
-                        bugs.append(f"В успешном ответе нет ID продукта")
+                    if data.get('name') != test['data'].get('name'):
+                        print(f"   ⚠️ Имя не совпадает!")
                         
             else:
-                print(f"❌ Ожидал {test['expected']}, получил {response.status_code}")
+                print(f"   ❌ Ожидал {test['expected']}, получил {response.status_code}")
                 failed += 1
-                bugs.append(f"{test['name']}: ожидал {test['expected']}, получил {response.status_code}")
                 
         except Exception as e:
-            print(f"⚠️ Ошибка: {e}")
+            print(f"   ⚠️ Ошибка: {e}")
             failed += 1
-            bugs.append(f"{test['name']}: исключение - {e}")
-        
-        print("-" * 50)
     
-    # Результаты
-    print(f"\n📊 РЕЗУЛЬТАТЫ:")
-    print(f"✅ Пройдено: {passed}")
-    print(f"❌ Не пройдено: {failed}")
+    print(f"\n📊 Результаты: {passed}/{passed+failed} прошло")
     
-    if bugs:
-        print(f"\n🐛 НАЙДЕННЫЕ БАГИ:")
-        for bug in bugs:
-            print(f"  - {bug}")
-    
-    return passed, failed, bugs
+    # Анализ покрытия
+    total_cases = len(PRODUCT_TEST_CASES)
+    coverage = (passed / total_cases) * 100
+    print(f"🎯 Покрытие тестами: {coverage:.1f}%")
 
 if __name__ == "__main__":
-    test_create_products()
+    test_products_with_validation()

@@ -1,2 +1,2 @@
-BASE_URL = "https://api.company.com"
+BASE_URL = "https://api.restful-api.dev"
 TIMEOUT = 10
